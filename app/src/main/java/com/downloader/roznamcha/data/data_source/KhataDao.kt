@@ -10,7 +10,7 @@ interface KhataDao : BaseDao<KhataEntryModel> {
     suspend fun getById(id: String): KhataEntryModel?
 
     @Query("DELETE FROM khata_entries WHERE khataEntryId = :entryId")
-    suspend fun deleteByEntryId(entryId: String): KhataEntryModel?
+    suspend fun deleteByEntryId(entryId: String)
 
     @Query("SELECT * FROM khata_entries WHERE businessId = :businessId")
     suspend fun getByBusinessId(businessId: String): List<KhataEntryModel>
