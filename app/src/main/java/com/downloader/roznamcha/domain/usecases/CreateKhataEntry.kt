@@ -13,10 +13,11 @@ class CreateKhataEntry(
     suspend operator fun invoke(
         id: String,
         amount: Double,
-        incomeForKhataPerson: Boolean,
+        income: Boolean,
         person: PersonToDeal,
         rozNamchaId: String,
         actualTime: Long,
+        canEdit: Boolean
     ) {
         val eId = preferencesHelper.employeeIdFlow.first() ?: ""
         val bId = preferencesHelper.businessIdFlow.first() ?: ""
@@ -27,7 +28,7 @@ class CreateKhataEntry(
                 khataNumber = person.khataNumber,
                 personName = person.name,
                 amount = amount,
-                incomeForKhataPerson = incomeForKhataPerson,
+                income = income,
                 description = "",
                 purchaseHistoryId = null,
                 khataTime = actualTime,
@@ -35,7 +36,8 @@ class CreateKhataEntry(
                 updateTime = System.currentTimeMillis(),
                 rozNamchaId = rozNamchaId,
                 businessId = bId,
-                employeeId = eId
+                employeeId = eId,
+                canEdited = canEdit
             )
         )
     }

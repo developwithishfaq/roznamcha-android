@@ -8,7 +8,6 @@ import androidx.navigation.compose.composable
 import com.downloader.roznamcha.LocalNavHostController
 import com.downloader.roznamcha.presentation.business.CreateBusinessScreen
 import com.downloader.roznamcha.presentation.navigation.Screen
-import com.downloader.roznamcha.presentation.screens.create_purchase.CreatePurchaseScreen
 import com.downloader.roznamcha.presentation.screens.home.HomeScreen
 
 @Composable
@@ -23,9 +22,6 @@ fun MainNavHost(
     ) {
         composable<Screen.Home> {
             HomeScreen()
-        }
-        composable<Screen.CreatePurchase> {
-            CreatePurchaseScreen()
         }
         composable<Screen.CreateBusiness> {
             CreateBusinessScreen(moveToNextScreen = {

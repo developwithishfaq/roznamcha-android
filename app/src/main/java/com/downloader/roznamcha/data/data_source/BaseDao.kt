@@ -35,18 +35,6 @@ interface BaseDao<T> {
         afterInsertAll(entities)
     }
 
-    suspend fun update(entity: T) {
-        beforeUpdate(entity)
-        updateInternal(entity)
-        afterUpdate(entity)
-    }
-
-    suspend fun updateAll(entities: List<T>) {
-        beforeUpdateAll(entities)
-        updateAllInternal(entities)
-        afterUpdateAll(entities)
-    }
-
     suspend fun delete(entity: T) {
         beforeDelete(entity)
         deleteInternal(entity)

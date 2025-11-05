@@ -6,20 +6,24 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "purchase_history")
 data class PurchaseHistory(
     @PrimaryKey(autoGenerate = false)
-    val purchaseId: String,
+    val id: String,
     val purchaseTime: Long,
     val creationTime: Long,
     val updateTime: Long,
 
     val dealerKhataNumber: Int,
     val dealerName: String,
+    val dealerKhataReferenceId: String,
 
     val driverKhataNumber: Int,
     val driverName: String,
+    val driverKhataReferenceId: String,
 
-    val itemWeight: Float,
-    val perKgPrice: Float,
-    val perKgDriverWage: Float,
+    val itemWeight: Double,
+    val perKgPrice: Double,
+    val perKgDriverWage: Double,
     val businessId: String,
+    val employeeId: String,
+
 
 )

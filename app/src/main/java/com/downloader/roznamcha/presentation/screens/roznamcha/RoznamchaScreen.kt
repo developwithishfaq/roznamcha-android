@@ -1,5 +1,7 @@
 package com.downloader.roznamcha.presentation.screens.roznamcha
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,14 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.Divider
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.downloader.roznamcha.domain.models.RozNamchaPaymentUi
@@ -44,122 +51,265 @@ fun RoznamchaScreen(
     val groups by viewModel.groups.collectAsState()
     val currentIndex by viewModel.currentIndex.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(horizontal = 5.dp),
-                onClick = {
-                    showDialog = true
-                }
-            ) {
-                Text(
-                    "Quick Add",
-                    modifier = Modifier
-                        .padding(horizontal = 15.dp)
-                )
-            }
-        }) {
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
 
         if (showDialog) {
             RozNamchaPaymentDialog(
                 onDismiss = { showDialog = false },
-                onSaved = { showDialog = false })
+                onSaved = { showDialog = false },
+                viewModel = viewModel
+            )
         }
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
         ) {
             SlidingTopBar(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 text = currentGroup?.date ?: "No entries",
                 onNext = { viewModel.next() },
-                onBack = { viewModel.previous() })
-
-            Spacer(modifier = Modifier.height(8.dp))
+                onBack = { viewModel.previous() }
+            )
 
             if (currentGroup == null) {
-                // Empty state
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = "No payments yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
-                    )
-                }
+                EmptyRoznamchaState()
             } else {
-                // show only current group's payments
+                LedgerHeader(
+                    openingBalance = currentGroup!!.openingBalance,
+                    closingBalance = currentGroup!!.closingBalance
+                )
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     items(currentGroup!!.payments, key = { it.id }) { payment ->
-                        PaymentItem(payment = payment)
+                        LedgerRow(payment = payment) {
+                            showDialog = true
+                            viewModel.onPaymentClicked(payment)
+                        }
                     }
 
                     item {
-                        // small footer showing paging info
+                        Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Showing ${currentIndex + 1} of ${groups.size}",
+                            text = "Day ${currentIndex + 1} of ${groups.size}",
+                            modifier = Modifier.fillMaxWidth(),
                             style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp),
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
         }
+        FloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(20.dp),
+            onClick = {
+                viewModel.reset()
+                showDialog = true
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+        }
+    }
+    /*Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.reset()
+                    showDialog = true
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+            }
+        }
+    ) { paddingValues ->
+        if (showDialog) {
+            RozNamchaPaymentDialog(
+                onDismiss = { showDialog = false },
+                onSaved = { showDialog = false },
+                viewModel = viewModel
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            SlidingTopBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                text = currentGroup?.date ?: "No entries",
+                onNext = { viewModel.next() },
+                onBack = { viewModel.previous() }
+            )
+
+            if (currentGroup == null) {
+                EmptyRoznamchaState()
+            } else {
+                LedgerHeader(
+                    openingBalance = currentGroup!!.openingBalance,
+                    closingBalance = currentGroup!!.closingBalance
+                )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    items(currentGroup!!.payments, key = { it.id }) { payment ->
+                        LedgerRow(payment = payment) {
+                            showDialog = true
+                            viewModel.onPaymentClicked(payment)
+                        }
+                    }
+
+                    item {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Day ${currentIndex + 1} of ${groups.size}",
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }*/
+}
+
+@Composable
+private fun EmptyRoznamchaState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+            )
+            Text("No payments yet", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Tap Quick Add to create your first entry",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
 @Composable
-fun PaymentItem(payment: RozNamchaPaymentUi) {
-    val backgroundColor = if (payment.isMyIncome) Color(0xFFDFF7E7) else Color(0xFFFFF0F0)
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+private fun LedgerHeader(openingBalance: Double, closingBalance: Double) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text(
-                    text = if (payment.isMyIncome) "Income" else "Expense",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = payment.addedByEmployee,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
-                Text(text = "Rs ${payment.amount}", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(4.dp))
-                // optional show time-of-day (hh:mm) if you want:
-                val time = remember(payment.timeMillis) {
-                    SimpleDateFormat(
-                        "hh:mm a", Locale.getDefault()
-                    ).format(Date(payment.timeMillis))
-                }
-                Text(text = time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-            }
+            Text(
+                "Opening: Rs ${String.format("%.2f", openingBalance)}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "Closing: Rs ${String.format("%.2f", closingBalance)}",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (closingBalance >= 0) Color(0xFF2E7D32) else Color(0xFFC62828)
+            )
         }
     }
+}
+
+@Composable
+fun LedgerRow(payment: RozNamchaPaymentUi, onClick: () -> Unit) {
+    val time = remember(payment.timeMillis) {
+        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(payment.timeMillis))
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 8.dp, horizontal = 12.dp)
+            .clickable {
+                onClick.invoke()
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(
+                imageVector = if (payment.income) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward,
+                contentDescription = null,
+                tint = if (payment.income) Color(0xFF2E7D32) else Color(0xFFC62828),
+                modifier = Modifier.size(20.dp)
+            )
+
+            Column {
+                Text(
+                    text = payment.personName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Khata: ${payment.khataNumber}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "Rs ${String.format("%.2f", payment.amount)}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = if (payment.income) Color(0xFF2E7D32) else Color(0xFFC62828)
+            )
+            Text(
+                text = time,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+
+    Divider(
+        modifier = Modifier.padding(horizontal = 12.dp),
+        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+        thickness = 1.dp
+    )
 }
 

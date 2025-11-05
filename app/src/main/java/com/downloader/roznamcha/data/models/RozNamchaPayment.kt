@@ -8,7 +8,7 @@ data class RozNamchaPayment(
     @PrimaryKey(autoGenerate = false)
     val id: String,
     val amount: Double,
-    val isMyIncome: Boolean,
+    val income: Boolean,
     val actualTime: Long,
     val creationTime: Long,
     val updateTime: Long,

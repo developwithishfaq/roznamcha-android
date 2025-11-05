@@ -10,7 +10,7 @@ data class KhataEntryModel(
     val khataNumber: Int,
     val personName: String,
     val amount: Double,
-    val incomeForKhataPerson: Boolean,
+    val income: Boolean,
     val description: String,
     val purchaseHistoryId: String?,
     val khataTime: Long,
@@ -19,4 +19,5 @@ data class KhataEntryModel(
     val rozNamchaId: String?,
     val businessId: String,
     val employeeId: String,
+    val canEdited: Boolean,
 )

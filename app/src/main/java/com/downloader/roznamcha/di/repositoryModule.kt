@@ -19,10 +19,9 @@ val repositoryModule = module {
         RozNamchaRepository(get())
     }
 
-    // Khata
-    single<KhataRepository> {
-        KhataRepository(get())
-    }
+    // K
+    // hata
+    singleOf(::KhataRepository)
     // repositoryModule.kt
     single<BusinessRepository> {
         BusinessRepository(get())

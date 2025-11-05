@@ -2,8 +2,8 @@ package com.downloader.roznamcha.data.data_source
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.downloader.roznamcha.data.models.Business
 import com.downloader.roznamcha.data.models.RozNamchaPayment
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface RozNamchaPaymentDao : BaseDao<RozNamchaPayment> {
@@ -13,5 +13,8 @@ interface RozNamchaPaymentDao : BaseDao<RozNamchaPayment> {
 
     @Query("SELECT * FROM RozNamchaPayment")
     suspend fun getAll(): List<RozNamchaPayment>
+
+    @Query("SELECT * FROM RozNamchaPayment")
+    fun getAllFlow(): Flow<List<RozNamchaPayment>>
 
 }

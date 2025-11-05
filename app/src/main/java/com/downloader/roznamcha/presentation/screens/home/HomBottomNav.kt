@@ -43,7 +43,6 @@ fun HomeBottomNav(selectedIndex: Int, onClick: (Int) -> Unit) {
         )
     }
 }
-
 @Composable
 fun RowScope.HomeBottomNavItem(text: String, selected: Boolean, onClick: () -> Unit) {
     Text(

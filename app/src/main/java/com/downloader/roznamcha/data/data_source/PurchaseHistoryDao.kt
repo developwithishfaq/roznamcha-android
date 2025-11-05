@@ -7,7 +7,7 @@ import com.downloader.roznamcha.data.models.PurchaseHistory
 @Dao
 interface PurchaseHistoryDao : BaseDao<PurchaseHistory> {
 
-    @Query("SELECT * FROM purchase_history WHERE purchaseId = :id")
+    @Query("SELECT * FROM purchase_history WHERE id = :id")
     suspend fun getById(id: String): PurchaseHistory?
 
     @Query("SELECT * FROM purchase_history WHERE businessId = :businessId")

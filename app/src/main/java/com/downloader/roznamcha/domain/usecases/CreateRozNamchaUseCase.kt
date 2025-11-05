@@ -38,11 +38,11 @@ class CreateRozNamchaUseCase(
         val eId = preferencesHelper.employeeIdFlow.first() ?: ""
         val time = System.currentTimeMillis()
 
-        rozNamchaRepository.update(
+        rozNamchaRepository.insert(
             RozNamchaPayment(
                 id = id,
                 amount = amount,
-                isMyIncome = income,
+                income = income,
                 actualTime = actualTime,
                 creationTime = time,
                 updateTime = time,
@@ -56,10 +56,11 @@ class CreateRozNamchaUseCase(
         createKhataEntry.invoke(
             id = khataId,
             amount = amount,
-            incomeForKhataPerson = income,
+            income = income.not(),
             person = personToDeal,
             rozNamchaId = id,
-            actualTime = actualTime
+            actualTime = actualTime,
+            canEdit = false
         )
     }
 }

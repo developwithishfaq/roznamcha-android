@@ -1,17 +1,18 @@
 package com.downloader.roznamcha.presentation.sheets.persons
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.downloader.roznamcha.core.prefs.PreferencesHelper
 import com.downloader.roznamcha.data.models.PersonToDeal
 import com.downloader.roznamcha.data.repository.PersonToDealRepository
+import com.downloader.roznamcha.domain.usecases.CreatePersonUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 data class PersonToDealUiState(
     val persons: List<PersonToDeal> = emptyList(),
@@ -25,7 +26,8 @@ data class PersonToDealUiState(
 
 class PersonToDealViewModel(
     private val repo: PersonToDealRepository,
-    private val preferencesHelper: PreferencesHelper
+    private val preferencesHelper: PreferencesHelper,
+    private val createPersonUseCase: CreatePersonUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PersonToDealUiState())
@@ -35,7 +37,13 @@ class PersonToDealViewModel(
         viewModelScope.launch {
             val bId = preferencesHelper.businessIdFlow.first() ?: ""
             repo.getByBusiness(bId).collectLatest { persons ->
-                _state.update { it.copy(persons = persons, filtered = persons) }
+                Log.d("cvv", "loadPersons: ${persons.size}")
+                val q = state.value.searchQuery.lowercase()
+                _state.update {
+                    it.copy(persons = persons, filtered = persons.filter { p ->
+                        q.isBlank() || p.name.lowercase().contains(q)
+                    })
+                }
             }
         }
     }
@@ -45,14 +53,7 @@ class PersonToDealViewModel(
         val list = _state.value.persons.filter {
             q.isBlank() || it.name.lowercase().contains(q)
         }
-        _state.update { it.copy(filtered = list) }
-    }
-
-    fun filteredPersons(): List<PersonToDeal> {
-        val q = _state.value.searchQuery.lowercase()
-        return _state.value.persons.filter {
-            q.isBlank() || it.name.lowercase().contains(q)
-        }
+        _state.update { it.copy(filtered = list, searchQuery = query) }
     }
 
     fun showAddNew() {
@@ -74,21 +75,16 @@ class PersonToDealViewModel(
         khataNumber: Int,
         role: String,
         description: String,
+        success: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
-            val businessId = preferencesHelper.businessIdFlow.first() ?: ""
-            val newPerson = PersonToDeal(
-                personId = UUID.randomUUID().toString(),
-                khataNumber = khataNumber,
-                name = name,
-                role = role,
-                description = description,
-                businessId = businessId,
-                creationTime = System.currentTimeMillis(),
-                updateTime = System.currentTimeMillis()
-            )
-            repo.insert(newPerson)
-            _state.update { it.copy(isAddingNew = false) }
+            if (createPersonUseCase.invoke(name, khataNumber)) {
+                _state.update { it.copy(isAddingNew = false) }
+                success.invoke(true)
+            } else {
+                success.invoke(false)
+//                alreadyExist.invoke()
+            }
         }
     }
 
@@ -108,12 +104,16 @@ class PersonToDealViewModel(
                 description = description,
                 updateTime = System.currentTimeMillis()
             )
-            repo.update(updated)
+            repo.insert(updated)
             _state.update { it.copy(isEditing = false, selectedPerson = null) }
         }
     }
 
     fun cancelForm() {
         _state.update { it.copy(isAddingNew = false, isEditing = false, selectedPerson = null) }
+    }
+
+    fun reset() {
+        _state.update { it.copy(isAddingNew = false, isEditing = false) }
     }
 }

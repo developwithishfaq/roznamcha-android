@@ -15,10 +15,12 @@ fun List<RozNamchaPayment>.toUiGrouped(): List<RozNamchaGroupedPaymentsUi> {
         RozNamchaPaymentUi(
             id = entity.id,
             amount = entity.amount,
-            isMyIncome = entity.isMyIncome,
+            income = entity.income,
             formattedDate = dateFormatter.format(date),
             timeMillis = entity.actualTime,
-            addedByEmployee = entity.addedByEmployee
+            addedByEmployee = entity.addedByEmployee,
+            personName = entity.personName,
+            khataNumber = entity.personKhataNumber
         )
     }
 
