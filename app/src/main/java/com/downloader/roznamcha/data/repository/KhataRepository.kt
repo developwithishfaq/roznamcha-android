@@ -11,6 +11,7 @@ class KhataRepository(
 ) : BaseRepository<KhataEntryModel>(dao) {
 
     suspend fun getById(id: String): KhataEntryModel? = dao.getById(id)
+    suspend fun deleteByEntryId(entryId: String) = dao.deleteByEntryId(entryId)
 
     fun getByBusiness(businessId: String): Flow<List<KhataEntryModel>> = flow {
         emit(dao.getByBusinessId(businessId))

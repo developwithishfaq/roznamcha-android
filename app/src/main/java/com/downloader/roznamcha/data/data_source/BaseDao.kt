@@ -1,9 +1,7 @@
 package com.downloader.roznamcha.data.data_source
 
 import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Update
+import androidx.room.Upsert
 
 /**
  * Generic BaseDao that handles all common CRUD operations.
@@ -12,16 +10,10 @@ import androidx.room.Update
 interface BaseDao<T> {
 
     //region --- Room Internal Operations ---
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertInternal(entity: T)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAllInternal(entities: List<T>)
-
-    @Update
+    @Upsert
     suspend fun updateInternal(entity: T)
 
-    @Update
+    @Upsert
     suspend fun updateAllInternal(entities: List<T>)
 
     @Delete
@@ -33,13 +25,13 @@ interface BaseDao<T> {
 
     suspend fun insert(entity: T) {
         beforeInsert(entity)
-        insertInternal(entity)
+        updateInternal(entity)
         afterInsert(entity)
     }
 
     suspend fun insertAll(entities: List<T>) {
         beforeInsertAll(entities)
-        insertAllInternal(entities)
+        updateAllInternal(entities)
         afterInsertAll(entities)
     }
 
