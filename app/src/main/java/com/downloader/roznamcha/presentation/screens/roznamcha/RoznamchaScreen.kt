@@ -14,12 +14,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,53 +43,76 @@ fun RoznamchaScreen(
     val currentGroup by viewModel.currentGroup.collectAsState()
     val groups by viewModel.groups.collectAsState()
     val currentIndex by viewModel.currentIndex.collectAsState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        SlidingTopBar(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            text = currentGroup?.date ?: "No entries",
-            onNext = { viewModel.next() },
-            onBack = { viewModel.previous() }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (currentGroup == null) {
-            // Empty state
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    var showDialog by remember { mutableStateOf(false) }
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(horizontal = 5.dp),
+                onClick = {
+                    showDialog = true
+                }
+            ) {
                 Text(
-                    text = "No payments yet",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Gray
+                    "Quick Add",
+                    modifier = Modifier
+                        .padding(horizontal = 15.dp)
                 )
             }
-        } else {
-            // show only current group's payments
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(currentGroup!!.payments, key = { it.id }) { payment ->
-                    PaymentItem(payment = payment)
-                }
+        }) {
 
-                item {
-                    // small footer showing paging info
+        if (showDialog) {
+            RozNamchaPaymentDialog(
+                onDismiss = { showDialog = false },
+                onSaved = { showDialog = false })
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            SlidingTopBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                text = currentGroup?.date ?: "No entries",
+                onNext = { viewModel.next() },
+                onBack = { viewModel.previous() })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (currentGroup == null) {
+                // Empty state
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "Showing ${currentIndex + 1} of ${groups.size}",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        textAlign = TextAlign.Center
+                        text = "No payments yet",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.Gray
                     )
+                }
+            } else {
+                // show only current group's payments
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(currentGroup!!.payments, key = { it.id }) { payment ->
+                        PaymentItem(payment = payment)
+                    }
+
+                    item {
+                        // small footer showing paging info
+                        Text(
+                            text = "Showing ${currentIndex + 1} of ${groups.size}",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
         }
@@ -97,8 +124,7 @@ fun PaymentItem(payment: RozNamchaPaymentUi) {
     val backgroundColor = if (payment.isMyIncome) Color(0xFFDFF7E7) else Color(0xFFFFF0F0)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
@@ -128,8 +154,7 @@ fun PaymentItem(payment: RozNamchaPaymentUi) {
                 // optional show time-of-day (hh:mm) if you want:
                 val time = remember(payment.timeMillis) {
                     SimpleDateFormat(
-                        "hh:mm a",
-                        Locale.getDefault()
+                        "hh:mm a", Locale.getDefault()
                     ).format(Date(payment.timeMillis))
                 }
                 Text(text = time, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
