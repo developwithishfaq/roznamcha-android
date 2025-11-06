@@ -12,13 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CurrencyRupee
+import androidx.compose.material.icons.filled.LineWeight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Update
@@ -41,33 +43,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.downloader.roznamcha.core.extensions.multiply
 import com.downloader.roznamcha.data.models.PersonToDeal
 import com.downloader.roznamcha.presentation.sheets.persons.PersonBottomSheet
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-/*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PurchasesDetailDialog(
-    onDismiss: () -> Unit,
-    onSaved: () -> Unit,
-    viewModel: PurchasesViewModel = koinViewModel()
+    onDismiss: () -> Unit, onSaved: () -> Unit, viewModel: PurchasesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    var showPersonsSheet by remember { mutableStateOf(false) }
+    var showPersonsSheet by remember { mutableIntStateOf(0) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     val dateFormatter = remember {
@@ -75,8 +78,7 @@ fun PurchasesDetailDialog(
     }
 
     Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Card(
             modifier = Modifier
@@ -91,6 +93,7 @@ fun PurchasesDetailDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
                 // Header
@@ -113,53 +116,68 @@ fun PurchasesDetailDialog(
                     }
                     IconButton(onClick = onDismiss) {
                         Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close"
+                            imageVector = Icons.Default.Close, contentDescription = "Close"
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
                 // Amount Input - Prominent
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Weight",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    OutlinedTextField(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    InputField(
+                        title = "Weight",
+                        modifier = Modifier
+                            .weight(1f),
                         value = state.weight,
                         onValueChange = { viewModel.updateState(state.copy(weight = it)) },
-                        placeholder = { Text("0.00") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.CurrencyRupee,
-                                contentDescription = null
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                        ),
-                        textStyle = MaterialTheme.typography.titleLarge
+                        icon = Icons.Default.LineWeight
+                    )
+//                    Spacer(modifier = Modifier.height(10.dp))
+                    InputField(
+                        title = "Price Per Kg",
+                        modifier = Modifier
+                            .weight(1f),
+                        value = state.perKgWeightPrice,
+                        onValueChange = { viewModel.updateState(state.copy(perKgWeightPrice = it)) },
+                        icon = Icons.Default.LineWeight
                     )
                 }
-
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Worth = ${state.perKgWeightPrice.multiply(state.weight)}")
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // Person Selector - Card Style
-                PersonRow(person = state.dealer, onClick = {
-                    showPersonsSheet = true
-                })
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    PersonRow(
+                        modifier = Modifier
+                            .weight(1f), person = state.dealer, title = "Dealer", onClick = {
+                            showPersonsSheet = 1
+                        })
+                    Spacer(modifier = Modifier.height(10.dp))
+                    PersonRow(
+                        modifier = Modifier
+                            .weight(1f), person = state.driver, title = "Driver", onClick = {
+                            showPersonsSheet = 2
+                        })
+                }
                 Spacer(modifier = Modifier.height(10.dp))
-                PersonRow(person = state.driver, onClick = {
+                InputField(
+                    title = "Driver wage per kg",
+                    value = state.perKgDriverWage,
+                    onValueChange = { viewModel.updateState(state.copy(perKgDriverWage = it)) },
+                    icon = Icons.Default.LineWeight
+                )
 
-                })
-
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Driver Income = ${state.perKgDriverWage.multiply(state.weight)}")
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Date Picker - Card Style
@@ -239,15 +257,13 @@ fun PurchasesDetailDialog(
                         contentPadding = PaddingValues(vertical = 14.dp)
                     ) {
                         Icon(
-                            imageVector = if (state.selectedPaymentId != null)
-                                Icons.Default.Update
-                            else
-                                Icons.Default.Save,
+                            imageVector = if (state.selectedPurchaseId != null) Icons.Default.Update
+                            else Icons.Default.Save,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(if (state.selectedPaymentId != null) "Update" else "Save")
+                        Text(if (state.selectedPurchaseId != null) "Update" else "Save")
                     }
                 }
             }
@@ -255,50 +271,63 @@ fun PurchasesDetailDialog(
     }
 
     // Bottom Sheets and Pickers
-    if (showPersonsSheet) {
-        PersonBottomSheet(
-            onPersonSelected = {
-                showPersonsSheet = false
-                viewModel.selectPerson(it)
-            },
-            onDismiss = { showPersonsSheet = false }
-        )
+    if (showPersonsSheet != 0) {
+        PersonBottomSheet(onPersonSelected = {
+            if (showPersonsSheet == 1) {
+                viewModel.updateState(
+                    state.copy(
+                        dealer = it
+                    )
+                )
+            } else if (showPersonsSheet == 2) {
+                viewModel.updateState(
+                    state.copy(
+                        driver = it
+                    )
+                )
+            }
+            showPersonsSheet = 0
+        }, onDismiss = { showPersonsSheet = 0 })
     }
 
     if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("OK")
-                }
+        DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+            TextButton(onClick = { showDatePicker = false }) {
+                Text("OK")
             }
-        ) {
+        }) {
             val datePickerState = rememberDatePickerState(
                 initialSelectedDateMillis = state.paymentDate
             )
             DatePicker(
-                state = datePickerState,
-                showModeToggle = false
+                state = datePickerState, showModeToggle = false
             )
             LaunchedEffect(datePickerState.selectedDateMillis) {
                 datePickerState.selectedDateMillis?.let {
-                    viewModel.updatePaymentDate(it)
+                    viewModel.updateState(
+                        state.copy(
+                            paymentDate = it
+                        )
+                    )
                 }
             }
         }
     }
 }
-*/
 
 @Composable
 fun PersonRow(
     person: PersonToDeal?,
+    title: String = "Person",
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Text(
-            text = "Person",
+            text = title,
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary
         )
@@ -329,14 +358,12 @@ fun PersonRow(
                     )
                     Column {
                         Text(
-                            text = person?.name ?: "Select Person",
+                            text = person?.name ?: "Select $title",
+                            fontSize = 13.sp,
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (person != null)
-                                FontWeight.Medium else FontWeight.Normal,
-                            color = if (person != null)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                            fontWeight = if (person != null) FontWeight.Medium else FontWeight.Normal,
+                            color = if (person != null) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         person?.let {
                             Text(
@@ -354,5 +381,45 @@ fun PersonRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun InputField(
+    title: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onValueChange: (String) -> Unit,
+    icon: ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Decimal
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = { onValueChange.invoke(it) },
+            placeholder = { Text("0.00") },
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            leadingIcon = {
+                Icon(
+                    imageVector = icon, contentDescription = null
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+            ),
+            textStyle = MaterialTheme.typography.titleLarge
+        )
     }
 }

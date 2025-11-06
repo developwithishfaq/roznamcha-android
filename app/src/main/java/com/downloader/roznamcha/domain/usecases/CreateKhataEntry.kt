@@ -15,7 +15,8 @@ class CreateKhataEntry(
         amount: Double,
         income: Boolean,
         person: PersonToDeal,
-        rozNamchaId: String,
+        rozNamchaId: String? = null,
+        purchaseId: String? = null,
         actualTime: Long,
         canEdit: Boolean
     ) {
@@ -30,7 +31,7 @@ class CreateKhataEntry(
                 amount = amount,
                 income = income,
                 description = "",
-                purchaseHistoryId = null,
+                purchaseHistoryId = purchaseId,
                 khataTime = actualTime,
                 creationTime = prevKhata?.creationTime ?: System.currentTimeMillis(),
                 updateTime = System.currentTimeMillis(),

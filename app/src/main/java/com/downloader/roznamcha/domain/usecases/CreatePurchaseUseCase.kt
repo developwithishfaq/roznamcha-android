@@ -87,7 +87,7 @@ class CreatePurchaseUseCase(
             amount = dealerAmount,
             income = false,
             person = dealer,
-            rozNamchaId = id,
+            purchaseId = id,
             actualTime = actualTime,
             canEdit = false
         )

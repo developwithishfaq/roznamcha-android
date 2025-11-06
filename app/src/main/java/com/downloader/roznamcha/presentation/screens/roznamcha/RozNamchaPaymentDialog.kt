@@ -13,13 +13,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CurrencyRupee
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.TrendingUp
@@ -36,8 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -52,10 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.downloader.roznamcha.presentation.screens.purchases.InputField
+import com.downloader.roznamcha.presentation.screens.purchases.PersonRow
 import com.downloader.roznamcha.presentation.sheets.persons.PersonBottomSheet
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
@@ -188,6 +185,15 @@ fun RozNamchaPaymentDialog(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Amount Input - Prominent
+                InputField(
+                    title = "Amount",
+                    value = state.amount,
+                    onValueChange = {
+                        viewModel.updateAmount(it)
+                    },
+                    icon = Icons.Default.CurrencyRupee
+                )
+                /*
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = "Amount",
@@ -214,69 +220,13 @@ fun RozNamchaPaymentDialog(
                         ),
                         textStyle = MaterialTheme.typography.titleLarge
                     )
-                }
+                }*/
 
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Person Selector - Card Style
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Person",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showPersonsSheet = true },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Column {
-                                    Text(
-                                        text = state.personToDeal?.name ?: "Select Person",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = if (state.personToDeal != null)
-                                            FontWeight.Medium else FontWeight.Normal,
-                                        color = if (state.personToDeal != null)
-                                            MaterialTheme.colorScheme.onSurface
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    state.personToDeal?.let {
-                                        Text(
-                                            text = "Khata #${it.khataNumber}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = "Select",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
+                PersonRow(state.personToDeal,"") {
+                    showPersonsSheet = true
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))

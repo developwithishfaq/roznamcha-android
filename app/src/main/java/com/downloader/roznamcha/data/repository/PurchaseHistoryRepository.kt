@@ -12,8 +12,8 @@ class PurchaseHistoryRepository(
 
     suspend fun getById(id: String): PurchaseHistory? = dao.getById(id)
 
-    fun getByBusiness(businessId: String): Flow<List<PurchaseHistory>> = flow {
-        emit(dao.getByBusinessId(businessId))
+    fun getByBusiness(businessId: String): Flow<List<PurchaseHistory>> {
+        return dao.getByBusinessIdFlow(businessId)
     }
 
     fun getByDealerKhataNumber(dealerNumber: Int): Flow<List<PurchaseHistory>> = flow {

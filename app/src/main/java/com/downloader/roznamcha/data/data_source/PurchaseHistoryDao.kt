@@ -3,6 +3,7 @@ package com.downloader.roznamcha.data.data_source
 import androidx.room.Dao
 import androidx.room.Query
 import com.downloader.roznamcha.data.models.PurchaseHistory
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PurchaseHistoryDao : BaseDao<PurchaseHistory> {
@@ -12,6 +13,9 @@ interface PurchaseHistoryDao : BaseDao<PurchaseHistory> {
 
     @Query("SELECT * FROM purchase_history WHERE businessId = :businessId")
     suspend fun getByBusinessId(businessId: String): List<PurchaseHistory>
+
+    @Query("SELECT * FROM purchase_history WHERE businessId = :businessId")
+    fun getByBusinessIdFlow(businessId: String): Flow<List<PurchaseHistory>>
 
     @Query("SELECT * FROM purchase_history WHERE dealerKhataNumber = :dealerNumber")
     suspend fun getByDealerKhataNumber(dealerNumber: Int): List<PurchaseHistory>

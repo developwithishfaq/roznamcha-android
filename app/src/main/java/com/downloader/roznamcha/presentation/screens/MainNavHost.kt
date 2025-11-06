@@ -13,12 +13,13 @@ import com.downloader.roznamcha.presentation.screens.home.HomeScreen
 @Composable
 fun MainNavHost(
     modifier: Modifier,
+    initScreen: Screen
 ) {
     val navHostController: NavHostController = LocalNavHostController.current
     NavHost(
         modifier = modifier,
         navController = navHostController,
-        startDestination = Screen.CreateBusiness
+        startDestination = initScreen
     ) {
         composable<Screen.Home> {
             HomeScreen()
