@@ -7,6 +7,7 @@ import com.downloader.roznamcha.data.models.PersonToDeal
 import com.downloader.roznamcha.data.models.PurchaseHistory
 import com.downloader.roznamcha.data.repository.PurchaseHistoryRepository
 import com.downloader.roznamcha.domain.usecases.CreatePurchaseUseCase
+import com.downloader.roznamcha.domain.usecases.GetPersonByKhata
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +30,8 @@ data class PurchaseDetailUiState(
 class PurchasesViewModel(
     private val createPurchaseUseCase: CreatePurchaseUseCase,
     private val purchaseHistoryRepository: PurchaseHistoryRepository,
-    private val preferencesHelper: PreferencesHelper
+    private val preferencesHelper: PreferencesHelper,
+    private val getPersonByKhata: GetPersonByKhata
 ) : ViewModel() {
 
     private val _history = MutableStateFlow<List<PurchaseHistory>>(emptyList())
@@ -73,6 +75,22 @@ class PurchasesViewModel(
 
     fun reset() {
         _detailState.update { PurchaseDetailUiState() }
+    }
+
+    fun setData(purchase: PurchaseHistory) {
+        viewModelScope.launch {
+            _detailState.update {
+                it.copy(
+                    weight = purchase.itemWeight.toString(),
+                    perKgWeightPrice = purchase.perKgPrice.toString(),
+                    perKgDriverWage = purchase.perKgDriverWage.toString(),
+                    driver = getPersonByKhata.invoke(purchase.driverKhataNumber),
+                    dealer = getPersonByKhata.invoke(purchase.dealerKhataNumber),
+                    selectedPurchaseId = purchase.id,
+                    paymentDate = purchase.purchaseTime,
+                )
+            }
+        }
     }
 
 

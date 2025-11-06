@@ -84,7 +84,10 @@ fun PurchasesScreen(
                 items(history, key = { it.id }) { purchase ->
                     PurchaseHistoryCard(
                         purchase = purchase,
-                        onClick = { /* Handle click to edit */ }
+                        onClick = {
+                            showDialog = true
+                            viewModel.setData(purchase)
+                        }
                     )
                 }
             }

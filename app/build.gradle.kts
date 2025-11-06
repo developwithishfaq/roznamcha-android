@@ -22,8 +22,17 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
             isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -66,5 +75,8 @@ dependencies {
 
     implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation(libs.kotlinx.serialization.json)
+
+    var lottie_version = "6.6.6"
+    implementation("com.airbnb.android:lottie-compose:${lottie_version}")
 
 }
